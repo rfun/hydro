@@ -1,0 +1,22 @@
+{% extends "observed_data/base.html" %}
+
+{% load tethys_gizmos %}
+
+{% block app_navigation_items %}
+  <li class="title">App Navigation</li>
+  <li><a href="{% url 'observed_data:home' %}">Home</a></li>
+  <li><a href="{% url 'observed_data:map' %}">Map</a></li>
+  <li class="active"><a href="{% url 'observed_data:values' %}">Values</a></li>
+{% endblock %}
+
+{% block app_content %}
+{% endblock %}
+
+{% block app_actions %}
+  <a href="{% url 'observed_data:home' %}" class="btn btn-default">Back</a>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% gizmo_dependencies %}
+{% endblock %}

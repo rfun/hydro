@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+ <Document>
+  <name>Sites</name>
+  <description>List of Sites</description>
+  <Placemark>
+   <name>Palomino</name>
+   <value>1</value>
+   <Point>
+    <coordinates>-70.9575813607015,18.810783</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Los Bancos</name>
+   <value>2</value>
+   <Point>
+    <coordinates>-71.06119553567474,18.678007</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Presa de Sabaneta</name>
+   <value>3</value>
+   <Point>
+    <coordinates>-71.28982099634956,18.976622</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Presa de Sabana Yegua</name>
+   <value>4</value>
+   <Point>
+    <coordinates>-71.04773626374946,18.707947</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Los Pinales</name>
+   <value>5</value>
+   <Point>
+    <coordinates>-71.24342353175821,19.127738</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Valle del Tetero</name>
+   <value>6</value>
+   <Point>
+    <coordinates>-70.92563245586705,18.994952</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Tamayo</name>
+   <value>7</value>
+   <Point>
+    <coordinates>-71.29160579768583,18.296454</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Paso de Lima</name>
+   <value>8</value>
+   <Point>
+    <coordinates>-71.29954095389662,19.031064</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Aguacate</name>
+   <value>9</value>
+   <Point>
+    <coordinates>-71.02480366693686,18.855513</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Cañafistol</name>
+   <value>10</value>
+   <Point>
+    <coordinates>-71.25836565957668,18.892486</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>Sabana Alta</name>
+   <value>11</value>
+   <Point>
+    <coordinates>-71.10897454764346,18.724674</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>El Cacheo</name>
+   <value>12</value>
+   <Point>
+    <coordinates>-71.11786344369251,18.817731</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>El Popote</name>
+   <value>13</value>
+   <Point>
+    <coordinates>-71.11786344369251,18.817731</coordinates>
+   </Point>
+  </Placemark>
+  <Placemark>
+   <name>La Guama</name>
+   <value>14</value>
+   <Point>
+    <coordinates>-70.81230244671858,18.725233</coordinates>
+   </Point>
+  </Placemark>
+ </Document>
+</kml>
+

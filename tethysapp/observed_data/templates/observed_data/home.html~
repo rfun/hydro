@@ -1,0 +1,21 @@
+{% extends "observed_data/base.html" %}
+
+{% block app_navigation_items %}
+  <li class="title">App Navigation</li>
+  <li class="active"><a href="{% url 'observed_data:home' %}">Home</a></li>
+  <li><a href="{% url 'observed_data:map' %}">Map</a></li>
+  <li><a href="{% url 'observed_data:plot' %}">Plot</a></li>
+{% endblock %}
+
+{% block app_content %}
+  <h1>Welcome!</h1>
+  <p>This app was developed to find observed flow data from the Yaque del Sur Watershed</p>
+{% endblock %}
+
+{% block app_actions %}
+  <a href="{% url 'observed_data:map' %}" class="btn btn-default">Go To Map</a>
+{% endblock %}
+
+
+# <a href="" class="btn btn-default">Next</a>
+# <a href="" class="btn btn-default">Back</a>

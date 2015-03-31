@@ -1,0 +1,118 @@
+# Put your persistent store initializer functions in here
+
+from .model import engine, SessionMaker, Base, StreamGage
+
+def init_stream_gage_db(first_time):
+    """
+    An example persistent store initializer function
+    """
+    # Create tables
+    Base.metadata.create_all(engine)
+
+    # Initial data
+    if first_time:
+        # Make session
+        session = SessionMaker()
+
+
+        # Gage 1
+        gage1 = StreamGage(latitude=18.810783,
+                           longitude=-70.9575813607015,
+                           value=1 name=Palomino)
+        session.add(gage1)
+
+        # Gage 2
+        gage2 = StreamGage(latitude=18.678007,
+                           longitude=-71.06119553567474,
+                           value=2 name=Los Bancos)
+
+        session.add(gage2)
+
+        # Gage 3
+        gage3 = StreamGage(latitude=18.976622,
+                           longitude=-71.28982099634956,
+                           value=3 name=Presa de Sabaneta)
+
+        session.add(gage3)
+
+        # Gage 4
+        gage4 = StreamGage(latitude=18.707947,
+                           longitude=-71.04773626374946,
+                           value=4 name=Presa de Sabana Yegua)
+
+        session.add(gage4)
+
+        # Gage 5
+        gage5 = StreamGage(latitude=19.127738,
+                           longitude=-71.24342353175821,
+                           value=5 name=Los Pinales)
+
+        session.add(gage5)
+
+        # Gage 6
+        gage6 = StreamGage(latitude=18.994952,
+                           longitude=-70.92563245586705,
+                           value=6 name=Valle de Tetero)
+
+        session.add(gage6)
+
+        # Gage 7
+        gage7 = StreamGage(latitude=18.296454,
+                           longitude=-71.29160579768583,
+                           value=7 name=Tamayo)
+
+        session.add(gage7)
+
+        # Gage 8
+        gage8 = StreamGage(latitude=19.031064,
+                           longitude=-71.29954095389662,
+                           value=8 name=Paso de Lima)
+
+        session.add(gage8)
+
+
+        # Gage 9
+        gage9 = StreamGage(latitude=18.855513,
+                           longitude=-71.02480366693686,
+                           value=9 name=Aguacate)
+
+        session.add(gage9)
+
+        # Gage 10
+        gage10 = StreamGage(latitude=18.892486,
+                           longitude=-71.25836565957668,
+                           value=10 name=Canafistol)
+
+        session.add(gage10)
+
+        # Gage 11 
+        gage11 = StreamGage(latitude=18.724674,
+                           longitude=-71.10897454764346,
+                           value=11 name=Sabana Alta)
+
+        session.add(gage11)
+
+        # Gage 12
+        gage12 = StreamGage(latitude=18.817731,
+                           longitude=-71.11786344369251,
+                           value=12 Name=El Cacheo)
+
+        session.add(gage12)
+
+        # Gage 13
+        gage13 = StreamGage(latitude=18.817731,
+                           longitude=-71.11786344369251,
+                           value=13 name=El Popote)
+
+        session.add(gage13)
+
+        # Gage 14
+        gage14 = StreamGage(latitude=18.725233,
+                           longitude=-70.81230244671858,
+                           value=14 name=La Guama)
+
+        session.add(gage14)
+
+        session.commit()
+
+
