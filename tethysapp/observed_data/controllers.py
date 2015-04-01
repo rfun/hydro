@@ -6,20 +6,7 @@ from .lib.getvalues_python import getSitesinBBOX, getVarCode, getJSON, userMenu,
 from datetime import datetime
 
 
-
-
 def home(request):
-    """
-    Controller for the app home page.
-    """
-    context = {}
-
-    return render(request, 'observed_data/home.html', context)
-
-
-
-
-def map(request):
     """
     Controller for map page.
     """
@@ -52,7 +39,6 @@ def map(request):
                    'width': '100%',
                    'input_overlays': geojson_gages,
 		  }
-
   # Required Gizmos for Data Retrieval
 
     # Site Selection
@@ -96,7 +82,7 @@ def map(request):
 		'startdate_options':startdate_options, 		
 		'enddate_options':enddate_options}
 
-    return render(request, 'observed_data/map.html', context)
+    return render(request, 'observed_data/home.html', context)
 
 
 

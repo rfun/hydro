@@ -6,20 +6,7 @@ from .lib.getvalues_python import getSitesinBBOX, getVarCode, getJSON, userMenu,
 from datetime import datetime
 
 
-
-
 def home(request):
-    """
-    Controller for the app home page.
-    """
-    context = {}
-
-    return render(request, 'observed_data/home.html', context)
-
-
-
-
-def map(request):
     """
     Controller for map page.
     """
@@ -48,10 +35,23 @@ def map(request):
     geojson_gages = sitesPlotJSON
 
     # Configure the map
-    map_options = {'height': '400px',
-                   'width': '100%',
-                   'input_overlays': geojson_gages,
-		  }
+    map_options = {
+        'height': '400px', 
+        'width': '100%', 
+        'controls': ['ZoomSlider', 
+                          {'ZoomToExtent': {
+                              'projection': 'EPSG:4326', 
+                              'extent': [-135, 22, -55, 54]
+                           }}
+        ], 
+        'layers': [{'GeoJSON': {'object': geojson_gages}}], 
+        'view': {
+             'projection': 'EPSG:4326',
+             'center': [-71, 19], 'zoom': 8,
+             'maxZoom': 18, 'minZoom': 3
+         }, 
+        'base_map': 'OpenStreetMap' 
+    }
 
   # Required Gizmos for Data Retrieval
 
@@ -96,7 +96,7 @@ def map(request):
 		'startdate_options':startdate_options, 		
 		'enddate_options':enddate_options}
 
-    return render(request, 'observed_data/map.html', context)
+    return render(request, 'observed_data/home.html', context)
 
 
 
@@ -176,7 +176,7 @@ def plot(request):
 
     for x in range(0,amount):
         observedValue=float(dataValues[i])
-        splitdateTimes = re.split(r'[-,:,\s]', dateTimes[i])
+        splitdateTimes = re.split(r'[-,T,:,\s]', dateTimes[i])
 
 
         dateYear = int(splitdateTimes[0])

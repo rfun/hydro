@@ -143,14 +143,14 @@ def getJSON(sites):
 # Function to create a list of sites suitable for the editable map
 def getPlotJSON(sites):
 
-    outputPlotJSON = {"type": "GeometryCollection",'geometries':[]}
+    outputPlotJSON = {"type": "FeatureCollection",'features':[]}
     #Build Feature from site data
     nameSites= []
     
     i = 1
     for site in sites:
         geometries = dict(type = "Point", coordinates = [site['Latitude'], site['Longitude']], properties={"name": i, "value":site['sitename']})
-        outputPlotJSON['geometries'].append(geometries)
+        outputPlotJSON['features'].append(geometries)
         nameSite = (site['sitename'],i)
         nameSites.append(nameSite)
         i += 1

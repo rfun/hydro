@@ -1,21 +1,32 @@
 {% extends "observed_data/base.html" %}
 
+{% load tethys_gizmos %}
+
 {% block app_navigation_items %}
   <li class="title">App Navigation</li>
   <li class="active"><a href="{% url 'observed_data:home' %}">Home</a></li>
-  <li><a href="{% url 'observed_data:map' %}">Map</a></li>
-  <li><a href="{% url 'observed_data:plot' %}">Plot</a></li>
 {% endblock %}
 
 {% block app_content %}
-  <h1>Welcome!</h1>
-  <p>This app was developed to find observed flow data from the Yaque del Sur Watershed</p>
+  <h1>Stream Gages</h1>
+  {% gizmo google_map_view map_options %}
+
+  <form id="map_submit" method="post" action="{% url 'observed_data:plot' %}">
+      {% csrf_token %}
+      {% gizmo select_input site_options %}
+      {% gizmo select_input variable_options %}
+      <h>*NOTE: Data Available from 2015-02-15 to 2015-03-29</h>
+      {% gizmo date_picker startdate_options %}
+      {% gizmo date_picker enddate_options %}
+  </form>
+
 {% endblock %}
 
 {% block app_actions %}
-  <a href="{% url 'observed_data:map' %}" class="btn btn-default">Go To Map</a>
+      <input form="map_submit" type="submit" name="input-submit" class="btn btn-default">
 {% endblock %}
 
+{% block scripts %}
+  {{ block.super }}
+{% endblock %}
 
-# <a href="" class="btn btn-default">Next</a>
-# <a href="" class="btn btn-default">Back</a>

@@ -20,7 +20,6 @@
 {% block app_navigation_items %}
   <li class="title">App Navigation</li>
   <li class="active"><a href="{% url 'observed_data:home' %}">Home</a></li>
-  <li><a href="{% url 'observed_data:map' %}">Map</a></li>
 {% endblock %}
 
 {% block app_content %}

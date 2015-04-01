@@ -4,6 +4,6 @@ window.onload=function(){
 		
 		mapobject.setCenter({lat: 18.81, lng: -70.95});
         mapobject.setZoom(8);
-    }, 2000);
+    }, 4000);
 };
 

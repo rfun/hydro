@@ -21,11 +21,7 @@ class ObservedHydrologicData(TethysAppBase):
 
         url_maps = (UrlMap(name='home',
                            url='observed-data',
-                           controller='observed_data.controllers.home'),
-                    UrlMap(name='map',
-                           url='observed-data/map',
-                           controller='observed_data.controllers.map'
-                           ),                    
+                           controller='observed_data.controllers.home'),              
                     UrlMap(name='plot',
                            url='observed-data/plot',
                            controller='observed_data.controllers.plot'
