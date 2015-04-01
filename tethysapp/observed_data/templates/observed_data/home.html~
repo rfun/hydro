@@ -23,10 +23,11 @@
 {% endblock %}
 
 {% block app_actions %}
-      <input form="map_submit" type="submit" name="input-submit" class="btn btn-default">
+      <input form="map_submit" value="Get Data" type="submit" name="input-submit" class="btn btn-default">
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
+  {% gizmo_dependencies %}
 {% endblock %}
 
