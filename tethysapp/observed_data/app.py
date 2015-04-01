@@ -31,16 +31,6 @@ class ObservedHydrologicData(TethysAppBase):
         return url_maps
 
 
-    def persistent_stores(self):
-        """
-        Add one or more persistent stores
-        """
-        stores = (PersistentStore(name='stream_gage_db',
-                                  initializer='init_stores:init_stream_gage_db',
-                                  spatial=True
-                ),
-        )
 
-        return stores
 
 

@@ -8,7 +8,7 @@ class ObservedHydrologicData(TethysAppBase):
 
     name = 'Observed Hydrologic Data'
     index = 'observed_data:home'
-    icon = 'observed_data/images/logo2.png'
+    icon = 'observed_data/images/logo.png'
     package = 'observed_data'
     root_url = 'observed-data'
     color = '#e67e22'
@@ -31,16 +31,6 @@ class ObservedHydrologicData(TethysAppBase):
         return url_maps
 
 
-    def persistent_stores(self):
-        """
-        Add one or more persistent stores
-        """
-        stores = (PersistentStore(name='stream_gage_db',
-                                  initializer='init_stores:init_stream_gage_db',
-                                  spatial=True
-                ),
-        )
 
-        return stores
 
 
