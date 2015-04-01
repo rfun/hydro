@@ -8,7 +8,7 @@ class ObservedHydrologicData(TethysAppBase):
 
     name = 'Observed Hydrologic Data'
     index = 'observed_data:home'
-    icon = 'observed_data/images/icon.gif'
+    icon = 'observed_data/images/logo.png'
     package = 'observed_data'
     root_url = 'observed-data'
     color = '#e67e22'
