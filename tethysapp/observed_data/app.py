@@ -25,10 +25,38 @@ class ObservedHydrologicData(TethysAppBase):
                     UrlMap(name='plot',
                            url='observed-data/plot',
                            controller='observed_data.controllers.plot'
+                           ),
+                     UrlMap(name='displaySites',
+                           url='observed-data/displaySites',
+                           controller='observed_data.controllers.displaySites'
+                           ),
+                     UrlMap(name='getSites',
+                           url='observed-data/getSites',
+                           controller='observed_data.controllers.getSites'
+                           ),
+                     UrlMap(name='getVariables',
+                           url='observed-data/getVariables',
+                           controller='observed_data.controllers.getVariables'
+                           ),
+                     UrlMap(name='addSites',
+                           url='observed-data/addsites',
+                           controller='observed_data.controllers.siteprocess'
                            )
+
         )
 
         return url_maps
+    def persistent_stores(self):
+        """
+        Add one or more persistent stores
+        """
+        stores = (PersistentStore(name='sites_db',
+                                  initializer='init_stores:init_sites_db',
+                                  spatial=True
+                ),
+        )
+
+        return stores
 
 
 

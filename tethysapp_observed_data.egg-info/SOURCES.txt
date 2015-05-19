@@ -6,6 +6,8 @@ tethysapp/observed_data/controllers.py
 tethysapp/observed_data/init_stores.py
 tethysapp/observed_data/model.py
 tethysapp/observed_data/utilities.py
+tethysapp/observed_data/lib/__init__.py
+tethysapp/observed_data/lib/getvalues_python.py
 tethysapp_observed_data.egg-info/PKG-INFO
 tethysapp_observed_data.egg-info/SOURCES.txt
 tethysapp_observed_data.egg-info/dependency_links.txt

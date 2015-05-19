@@ -1,34 +1,34 @@
-# Put your persistent store models in this file
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Float, Text
+from sqlalchemy import Column, Integer, Text
 from sqlalchemy.orm import sessionmaker
+
+from geoalchemy2 import Geometry
 
 from .utilities import get_persistent_store_engine
 
-# DB Engine, sessionmaker and base
-engine = get_persistent_store_engine('stream_gage_db')
-SessionMaker = sessionmaker(bind=engine)
-Base = declarative_base()
+# Spatial DB Engine, sessiomaker, and base
+spatial_engine = get_persistent_store_engine('sites_db')
+SpatialSessionMaker = sessionmaker(bind=spatial_engine)
+SpatialBase = declarative_base()
 
-# SQLAlchemy ORM definition for the stream_gages table
-class StreamGage (Base):
-    '''
-    Example SQLAlchemy DB Model
-    '''
-    __tablename__ = 'stream_gages'
+# SQLAlchemy ORM definition for the spatial_stream_gages table
+class SitesTable(SpatialBase):
+    __tablename__ = 'sites'
 
     # Columns
     id = Column(Integer, primary_key=True)
-    latitude = Column(Float)
-    longitude = Column(Float)
-    value = Column(Integer)
-    name = Column(Text)
+    sitename = Column(Text)
+    sitecode = Column(Text)
+    servicecode = Column(Text)
+    serviceURL = Column(Text)
+    geom = Column(Geometry('POINT'))
 
-    def __init__(self, latitude, longitude, value, name):
+    def __init__(self, latitude, longitude, name, code, servCode,servURL):
         """
-        Constructor for a gage
+        Constructor for a site
         """
-        self.latitude = latitude
-        self.longitude = longitude
-        self.value = value
-	self.name = name
+        self.geom = 'SRID=4326;POINT({0} {1})'.format(longitude, latitude)
+        self.sitename = name
+        self.sitecode = code
+        self.servicecode = servCode
+        self.serviceURL = servURL

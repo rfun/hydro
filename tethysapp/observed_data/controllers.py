@@ -1,52 +1,45 @@
 # module imports
 import os, json, re, json
 from django.shortcuts import render
-from .model import SessionMaker, StreamGage
-from .lib.getvalues_python import getSitesinBBOX, getVarCode, getJSON, userMenu, getPlotJSON
+from django.http import HttpResponse
+from .model import SpatialSessionMaker, SitesTable
+from .lib.getvalues_python import getSitesinBBOX, getVarCode, getJSON, getPlotJSON, getAllServices, getSitesFromServices,getVariablesFromSites, sendReq
 from datetime import datetime
 
+import sitesModel
+import addSites2,test
+
+def siteprocess(request):
+    test.add()
+    return HttpResponse("Yaay",status='200')
 
 def home(request):
     """
     Controller for map page.
     """
 
-    # Create workspace for the user
-    user = request.user
-    username = str(user)
-    folder_path = os.path.abspath(__file__)
-    folder_dir = os.path.dirname(folder_path)
-    directory = os.path.join(folder_dir, 'public', 'temp', username)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
     
-  # Creating List of sites for the map
-
-    # Bounding Box parameters of the Dominican Republic
-    xmin = -71.30
-    xmax = -71.10
-    ymin = 18.70
-    ymax = 19.04
-    # keyword found on his-central where you map the variable
-    keyword = "gage height, stream"
-    sites,services=getSitesinBBOX(xmin,ymin,xmax,ymax,keyword)
-    sitesPlotJSON, nameSites =getPlotJSON(sites)
-
-    geojson_gages = sitesPlotJSON
-
+    #Creating List of sevices
+   
+    allServices = getAllServices()
+    allServices.sort(key=lambda tup: tup[0]) 
     # Configure the map
     map_options = {'height': '400px',
-                   'width': '100%',
-                   'input_overlays': geojson_gages,
-		  }
-  # Required Gizmos for Data Retrieval
+                   'width': '100%'
+          }
+    # Required Gizmos for Data Retrieval
 
-    # Site Selection
+    # Service Selection
+    service_options = {'display_text': 'Theme:',
+        'name': 'selectService',
+        'multiple': True,
+        'options': allServices}
     site_options = {'display_text': 'Site:',
         'name': 'selectSite',
         'multiple': False,
-        'options': nameSites}
-
+        'options': []}
+    
+    #TODO : WORK ON THIS ONE
     # Variable Selection
     variable_options = {'display_text': 'Variable:',
         'name': 'selectVariable',
@@ -60,8 +53,8 @@ def home(request):
                'name': 'selectStart',
                'autoclose': True,
                'format': 'yyyy-mm-dd',
-               'start_date': '1/1/2000',
-               'initial': '2015-02-15',
+               'start_date': '1/1/1900',
+               'initial': '2010-01-01',
                'start_view': 'decade',
                'today_button': True}
     
@@ -70,17 +63,83 @@ def home(request):
                'name': 'selectEnd',
                'autoclose': True,
                'format': 'yyyy-mm-dd',
-               'start_date': '1/1/2014',
+               'start_date': '1/1/1900',
                'initial':'2015-03-29',
                'start_view': 'decade',
                'today_button': True}
-
+               
     # Pass variables to the template via the context dicitonary
     context = {'map_options': map_options,
-		'site_options':site_options,
-		'variable_options':variable_options, 
-		'startdate_options':startdate_options, 		
-		'enddate_options':enddate_options}
+        'service_options':service_options,
+        'site_options':site_options,
+        'variable_options':variable_options, 
+        'startdate_options':startdate_options,      
+        'enddate_options':enddate_options}
+
+
+    return render(request, 'observed_data/home.html', context)
+
+
+
+def homeOld(request):
+    """
+    Controller for map page.
+    """
+
+    # Create workspace for the user
+    user = request.user
+    username = str(user)
+    folder_path = os.path.abspath(__file__)
+    folder_dir = os.path.dirname(folder_path)
+    directory = os.path.join(folder_dir, 'public', 'temp', username)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    #Creating List of sevices
+   
+    allServices = getAllServices()
+    # Configure the map
+    map_options = {'height': '400px',
+                   'width': '100%'
+		  }
+    # Required Gizmos for Data Retrieval
+
+    # Service Selection
+    service_options = {'display_text': 'Theme:',
+        'name': 'selectService',
+        'multiple': True,
+        'options': allServices}
+
+    
+    variable_options = {'display_text': 'Variable:',
+        'name': 'selectVariable',
+        'multiple': False,
+        'options': [('Stage','1')]}
+    # When the hydroserver has flow ready, just add the flow option
+        #'options': [('Stage','1'),('Flow','2')]}
+
+    # Start Date Selection
+    startdate_options = {'display_text': 'Start Date:',
+               'name': 'selectStart',
+               'autoclose': True,
+               'format': 'yyyy-mm-dd',
+               'start_date': '1/1/1900',
+               'initial': '2010-01-01',
+               'start_view': 'decade',
+               'today_button': True}
+    
+    # End Date Selection
+    enddate_options = {'display_text': 'End Date:',
+               'name': 'selectEnd',
+               'autoclose': True,
+               'format': 'yyyy-mm-dd',
+               'start_date': '1/1/1900',
+               'initial':'2015-03-29',
+               'start_view': 'decade',
+               'today_button': True}
+    # Pass variables to the template via the context dicitonary
+    context = {'map_options': map_options,
+        'service_options':service_options}
 
     return render(request, 'observed_data/home.html', context)
 
@@ -95,22 +154,11 @@ def inputsubmit(request):
     params = request.POST
     startDate = params['selectStart']
     endDate = params['selectEnd']
-    siteVariable = int(params['selectVariable'])
-    siteID = int(params['selectSite'])
+    variable = params['selectVariable']
+    siteID = params['siteCode']
+    service = params['service']
 
-    if siteVariable == 1:
-        siteVariable = "Stage"
-        mapKeyword = "gage height, stream"
-        variableCode = "yaquedelsur:STAGE"
-        units = "ft"
-    else:
-        if siteVariable ==2:
-            siteVariable = "Flow"
-            mapKeyword = "Dishcharge, stream"
-            variableCode = "yaquedelsur:FLOW"
-            units = "cfs"
-
-    return startDate, endDate, siteVariable, mapKeyword, siteID, variableCode, units
+    return startDate, endDate, variable, siteID, service
 
 
 
@@ -121,39 +169,24 @@ def plot(request):
     """
     
     # Get input variables from form on map page
-    mapStartDate, mapEndDate, mapVariable, mapKeyword, mapSiteID, variableCode, units= inputsubmit(request)
+    mapStartDate, mapEndDate, mapVariable, mapSiteID, service= inputsubmit(request)
 
     # Declaring the user
     user = request.user
     username = str(user)
 
-    # Bounding box coordinates for the Dominican Republic
-    xmin = -71.30
-    xmax = -71.10
-    ymin = 18.70
-    ymax = 19.04
-
     # Input variables given from the map page
     siteID = mapSiteID
-    keyword = mapKeyword
     inputStartDate = mapStartDate
     inputEndDate = mapEndDate
     startDate = inputStartDate + "T00:00:00"
     endDate = inputEndDate + "T23:59:59"
-    variableCode = variableCode
-    units = units
-
-    # Using getvalues_python.py
-    sites,services=getSitesinBBOX(xmin,ymin,xmax,ymax,keyword)
-    sitesJSON=getJSON(sites)
-    sitesPlotJSON, nameSites =getPlotJSON(sites)
-    valuesJSON, dataValues, dateTimes =userMenu(sites,variableCode,startDate,endDate,siteID)
-
-    # Finding the selected site name for the plot subtitle
-    rows = nameSites
-    res_list = [x[0] for x in rows]
+    variableCode = mapVariable
     
-    newSiteID = res_list[mapSiteID-1]
+    valuesJSON, dataValues, dateTimes = sendReq(siteID,variableCode,startDate,endDate,service)
+
+#  return HttpResponse(json, content_type="application/json",status='200')
+
 
     # Creating the x y values for the plot
     amount = len(dataValues)
@@ -189,14 +222,14 @@ def plot(request):
     # Plot View Options
     highcharts_object = {
     'chart': {
-        'type': 'spline',
+        'type': 'line',
         'zoomType': 'x'
     },
     'title': {
         'text': 'Hydrologic Data Observations'
     },
       'subtitle': {
-          'text': newSiteID
+          'text': mapSiteID
       },
     'xAxis': {
         'maxZoom': 1 * 24 * 3600000, # 1 day in milliseconds
@@ -204,7 +237,7 @@ def plot(request):
     },
     'yAxis': {
         'title': {
-            'text': mapVariable + ' (' + units + ')'
+            'text': mapVariable #TODO : ADD UNITS HERE
         },
         'min': 0
     },
@@ -242,4 +275,97 @@ def plot(request):
 
     return render(request, 'observed_data/plot.html', context)
 
+def displaySites(request):
 
+    params = request.POST
+    services = params.getlist('selectService')
+    bbox = params.get('bbox').split(',')
+    # For each service we will build a list of sites. 
+    #First task is to get the sites to show up on the map. Second task will be to populate a drop down with all these sites
+    
+    # Bounding Box parameters from the URL
+    xmin = float(bbox[1])
+    xmax = float(bbox[3])
+    ymin = float(bbox[0])
+    ymax = float(bbox[2])
+    
+    sites=getSitesFromServices(xmin,ymin,xmax,ymax,','.join(services))
+    sitesJSON = getJSON(sites)
+    sitesPlotJSON, nameSites =getPlotJSON(sites)
+   
+    # Required Gizmos for Data Retrieval
+
+    # Site Selection
+    site_options = {'display_text': 'Site:',
+        'name': 'selectSite',
+
+        'multiple': False,
+        'options': nameSites}
+
+    #TODO : WORK ON THIS ONE
+    # Variable Selection
+    variable_options = {'display_text': 'Variable:',
+        'name': 'selectVariable',
+        'multiple': False,
+        'options': [('Stage','1')]}
+    # When the hydroserver has flow ready, just add the flow option
+        #'options': [('Stage','1'),('Flow','2')]}
+
+    # Start Date Selection
+    startdate_options = {'display_text': 'Start Date:',
+               'name': 'selectStart',
+               'autoclose': True,
+               'format': 'yyyy-mm-dd',
+               'start_date': '1/1/1900',
+               'initial': '2010-01-01',
+               'start_view': 'decade',
+               'today_button': True}
+    
+    # End Date Selection
+    enddate_options = {'display_text': 'End Date:',
+               'name': 'selectEnd',
+               'autoclose': True,
+               'format': 'yyyy-mm-dd',
+               'start_date': '1/1/1900',
+               'initial':'2015-03-29',
+               'start_view': 'decade',
+               'today_button': True}
+
+    #Building toggle elements
+    
+    toggle_switch2 = {'display_text': 'Map update on Pan','name': 'panUpdate', 'initial': True}
+
+    # Pass variables to the template via the context dicitonary
+    context = {
+        'sitesJSON' : sitesJSON,
+        'toggle_switch2' : toggle_switch2,
+        'services' : ','.join(services),
+        'site_options':site_options,
+        'variable_options':variable_options, 
+        'startdate_options':startdate_options,      
+        'enddate_options':enddate_options}
+
+    return render(request, 'observed_data/map.html', context)
+
+def getSites(request):
+    params = request.POST
+    bbox = params.get('bbox').split(',')
+    services = params.get('services')
+    #print services
+     # Bounding Box parameters from the URL
+    xmin = float(bbox[1])
+    xmax = float(bbox[3])
+    ymin = float(bbox[0])
+    ymax = float(bbox[2])
+    
+    sites=sitesModel.getSitesFromServices(xmin,ymin,xmax,ymax,services)
+    
+    return HttpResponse(sites, content_type="application/json",status='200')
+
+
+def getVariables(request):
+    params = request.POST
+    siteCode = params.get('siteCode')
+    service = params.get('siteUrl')
+
+    return HttpResponse(getVariablesFromSites(siteCode,service), content_type="application/json",status='200')

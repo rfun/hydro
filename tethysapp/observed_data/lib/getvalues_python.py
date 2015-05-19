@@ -1,7 +1,8 @@
 ##################HIS to CIWATER################
-## Version 0.2.1
+## Version 0.3
 ## Developed by : Rohit Khattar
 ## Modified by : Matt Saguibo
+## Reupdated again : Rohit Khattar
 ## BYU
 ## Note : 
 ##############################################
@@ -12,38 +13,98 @@ import urllib2,urllib, json
 from xml.dom import minidom
 import xml.etree.ElementTree as ET
 
+#Extra Lib
+from suds.client import Client
+import suds
+from suds.xsd.doctor import Import, ImportDoctor
+# Helper to get the string value of an element
+import logging
+# logging.basicConfig(level=logging.INFO)
+# logging.getLogger('suds.client').setLevel(logging.DEBUG)
 
+import ulmo
 
-def getSitesinBBOX(xmin,ymin,xmax,ymax,keyword):
+def getVal(source,element):
+    if (source.getElementsByTagName(element)[0].firstChild is None):
+        return ""
+    else:
+        return source.getElementsByTagName(element)[0].firstChild.nodeValue
 
-    #Sending out a POST request to get data from HIS Central
-
-    url = 'http://hiscentral.cuahsi.org/webservices/hiscentral.asmx/GetSitesInBox2'
-    values = {'xmin' : xmin,
-          'xmax' : xmax,
-          'ymin' : ymin,
-          'ymax' : ymax,
-          'conceptKeyword' : keyword,
-            'networkIDs':""}
-    data = urllib.urlencode(values)
+def makeCentralReq(endpoint,options):
+    url = 'http://hiscentral.cuahsi.org/webservices/hiscentral.asmx/'+endpoint
+    data = urllib.urlencode(options)
     req = urllib2.Request(url, data)
-
     try:
         response = urllib2.urlopen(req)
         the_page = response.read()
     except urllib2.HTTPError, error:
         print error.read()
-    
-    xmldoc = minidom.parseString(the_page)
-    sitelist = xmldoc.getElementsByTagName('Site') 
 
+    #return the_page
+    return minidom.parseString(the_page)
+
+def makeServiceReq(service,endpoint,options):
+    url = service.replace("?WSDL",'/'+endpoint)
+    data = urllib.urlencode(options)
+    req = urllib2.Request(url, data)
+    try:
+        response = urllib2.urlopen(req)
+        the_page = response.read()
+    except urllib2.HTTPError, error:
+        print error.read()
+
+    #return the_page
+    return ET.fromstring(the_page)
+
+def getSiteInfo(service,endpoint,siteCode):
+    imp = Import('http://schemas.xmlsoap.org/soap/encoding/')
+    imp.filter.add('http://www.cuahsi.org/his/1.0/ws/')
+    imp.filter.add('http://www.cuahsi.org/his/1.0/ws/AbstractTypes')
+    imp.filter.add('http://www.cuahsi.org/his/1.1/ws/')
+    imp.filter.add('http://www.cuahsi.org/waterML/1.1/')
+    imp.filter.add('http://www.cuahsi.org/his/1.1/ws/AbstractTypes')
+    
+    doctor = ImportDoctor(imp)
+    client = Client(service, doctor=doctor)
+    print service,siteCode
+    try:
+        result = client.service.GetSiteInfo(siteCode,'').encode('utf8')
+    except suds.WebFault as detail:
+        # Error Happened. 
+        # Mark this service as faulty!
+        return False
+    except Exception, e:
+        return False
+    return ET.fromstring(result)
+
+
+def getSitesinBBOX(xmin,ymin,xmax,ymax,keyword,networks=""):
+
+    #Sending out a POST request to get data from HIS Central
+   
+    options = {'xmin' : xmin,
+          'xmax' : xmax,
+          'ymin' : ymin,
+          'ymax' : ymax,
+          'conceptKeyword' : keyword,
+            'networkIDs':networks}
+    xmldoc = makeCentralReq('GetSitesInBox2',options)
+ 
+    sitelist = xmldoc.getElementsByTagName('Site') 
     #Prepare List of sites
     sites=[]
     services = set()
+
+    # SomeSites Do Not have a name. Hence the name will be a combination of the siteName is present and siteCode
+
     for site in sitelist:
         serviceURL = site.getElementsByTagName('servURL')[0].firstChild.nodeValue
-        services.add(serviceURL);
-        newSite = {'sitename': site.getElementsByTagName('SiteName')[0].firstChild.nodeValue,
+        services.add(serviceURL)
+        if(site.getElementsByTagName('SiteName')[0].firstChild is None):
+            siteName = site.getElementsByTagName('SiteCode')[0].firstChild.nodeValue
+        else:
+            siteName = site.getElementsByTagName('SiteName')[0].firstChild.nodeValue
+        newSite = {'sitename': siteName,
                    'SiteCode': site.getElementsByTagName('SiteCode')[0].firstChild.nodeValue,
                    'servURL': serviceURL,
                    'Latitude': site.getElementsByTagName('Latitude')[0].firstChild.nodeValue,
@@ -60,51 +121,25 @@ def getTSJSON(values,ts):
     
 
 
-def sendReq(site,varCode,startDate,endDate):
+def sendReq(siteCode,varCode,startDate,endDate,service):
     #Define Parameters for data retrieval
-
-    url =  site['servURL']#Service URL
-    url=url.replace("?WSDL",'/GetValuesObject')
-    siteCode = site['SiteCode']
-    variableCode = varCode
     
-    threshold = "0.01" #data below this will not be considered. $@TODO
-
-    values = {'location' : siteCode,
-          'variable' : variableCode,
-          'startDate' : startDate,
-          'endDate' : endDate,
-          'authToken':""}
-    
-    data = urllib.urlencode(values)
-    req = urllib2.Request(url, data)
-    the_page = ""
-    try:
-        response = urllib2.urlopen(req)
-        the_page = response.read()
-    except urllib2.HTTPError, error:
-        print error.read()
-    
-    values,ts = parseData(the_page)
+    data = ulmo.cuahsi.wof.get_values(service, siteCode, varCode, start=startDate, end=endDate, suds_cache=('default', ))
+   
+    values,ts = parseData(data)
     outputJSON = getTSJSON(values,ts)
     return outputJSON, values, ts
-    
-
 
 def parseData(getvalues_data):
 
-    #Data Parsing
-    
-    xmldoc = minidom.parseString(getvalues_data)
-    valuelist = xmldoc.getElementsByTagName('value') 
-    unit = "ft"
 
     values = []
     timeStamps = []
 
-    for value in valuelist:
-        values.append("%.2f" % (float(value.firstChild.nodeValue)))
-        timeStamps.append(str(value.attributes['dateTime'].value))
+    for value in getvalues_data['values']:
+        if value['value'] != '-9999':
+            values.append("%.2f" % (float(value['value'])))
+            timeStamps.append(str(value['datetime']))
 
     return values, timeStamps
 
@@ -126,13 +161,14 @@ def getJSON(sites):
 
     outputJSON = {'type': "FeatureCollection",'features' :[]}
     #Build Feature from site data
-
+    i=1
     for site in sites:
         feature = {
              "type": "Feature",
-             "geometry": {"type": "Point", "coordinates": [site['Latitude'], site['Longitude']]},
-             "properties": {"name": site['sitename'],"code": site['SiteCode'],"service": site['servURL'], }
+             "geometry": {"type": "Point", "coordinates": [float(site['Latitude']), float(site['Longitude'])]},
+             "properties": {"name": site['sitename'],"code": site['SiteCode'],"service": site['servURL'], "id": i}
             }
+        i=i+1
         outputJSON['features'].append(feature)
     
     return json.dumps(outputJSON)
@@ -156,12 +192,6 @@ def getPlotJSON(sites):
         i += 1
 
     return outputPlotJSON, nameSites
-
-
-
-
-
-
 
 # This code could be used for future use in HIS-Central
 
@@ -199,3 +229,79 @@ def getVarCode(services,keyword):
         except urllib2.HTTPError, error:
             print error.read() 
     return varCodes
+
+# Will fetch all available services on HIS Central
+def getAllServices():
+    xmin = -180
+    xmax = 180
+    ymin = -90
+    ymax = 90
+    options = {'xmin' : xmin,
+          'xmax' : xmax,
+          'ymin' : ymin,
+          'ymax' : ymax}
+    xmldoc = makeCentralReq('GetServicesInBox2',options)
+
+    services = xmldoc.getElementsByTagName('ServiceInfo') 
+    titles=[]
+    for service in services:
+        titles.append((getVal(service,'Title'),getVal(service,'NetworkName')))
+    return titles
+
+# Will fetch all available services on HIS Central
+def getAllServicesURL():
+    xmin = -180
+    xmax = 180
+    ymin = -90
+    ymax = 90
+    options = {'xmin' : xmin,
+          'xmax' : xmax,
+          'ymin' : ymin,
+          'ymax' : ymax}
+    xmldoc = makeCentralReq('GetServicesInBox2',options)
+
+    services = xmldoc.getElementsByTagName('ServiceInfo') 
+    titles=[]
+    for service in services:
+        titles.append(getVal(service,'servURL'))
+    return titles
+
+#Get Sites only with the listed services
+def getSitesFromServices(xmin,ymin,xmax,ymax,services):
+    sites,services = getSitesinBBOX(xmin,ymin,xmax,ymax,"",services)
+    #For each of the services, get the variables associated.
+    # for site in sites:
+    #     print site['servURL']
+    # print services
+    return sites
+    
+def getVariablesFromSites(siteCode,service):
+    
+    variableFinalList = []
+    variables = {}
+    try:
+        siteInfo = ulmo.cuahsi.wof.get_site_info(service, siteCode, suds_cache=('default', ))
+        for series in siteInfo['series']:
+            variable = siteInfo['series'][series]['variable']
+            print variable
+            if "name" in variable:
+                varName = variable['name']
+            else:
+                varName = "No Name"
+            if "data_type" in variable:
+                dt = variable['data_type']
+                finalName = varName + " (" + dt + ")"
+            else:
+                dt = ""
+                finalName = varName
+            varCode = variable['vocabulary']+":"+variable['code']
+            if(not (variables.has_key(varCode))):
+                variables[varCode]={'varCode':varCode,'varName':finalName}
+    except Exception,e:
+        print "ERROR",e
+        
+    for var in variables:
+        variableFinalList.append(variables[var])
+
+    #return variableFinalList
+    return json.dumps(variableFinalList);
